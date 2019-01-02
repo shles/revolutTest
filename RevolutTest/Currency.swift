@@ -8,13 +8,17 @@ import Foundation
 protocol Currency {
 
     var code: String { get }
-    var rates: [Rate] { get }
+    func fetchRates(completion: ([Rate]) -> ())
 }
 
 class FakeCurrency: Currency {
     private(set) var code: String = "USD"
 
-    lazy var rates: [Rate] = [SelfRate(currency: self), FakeEURtoUSDRate()]
+    lazy var rates: [Rate] = [FakeEURtoUSDRate()]
+
+    func fetchRates(completion: ([Rate]) -> ()) {
+        completion(rates)
+    }
 }
 
 class FakeCurrencyFromRate: Currency {
@@ -28,5 +32,9 @@ class FakeCurrencyFromRate: Currency {
     }
 
     private(set) var code: String
-    private(set) lazy var rates: [Rate] = [SelfRate(currency: self), FakeUSDtoEURRate()]
+    private(set) lazy var rates: [Rate] =  [FakeUSDtoEURRate()]
+
+    func fetchRates(completion: ([Rate]) -> ()) {
+        completion(rates)
+    }
 }

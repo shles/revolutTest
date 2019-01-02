@@ -10,8 +10,7 @@ import UIKit
 import SnapKit
 
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, BaseUpdatingView {
-
-
+    
     private var tableView = UITableView()
 
     private var viewModel: RateCellModelsSource & RepeatingSource
@@ -39,7 +38,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
 
-        viewModel.startFetching(fetchResultHandler: {}())
+        viewModel.startFetching(forAmount: 100)
 
     }
 
@@ -61,13 +60,21 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     func updateBase(indexPath: IndexPath) {
         CATransaction.begin()
         CATransaction.setCompletionBlock {
-            self.tableView.reloadData()
+//            self.tableView.reloadData()
             self.tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.becomeFirstResponder()
         }
         tableView.beginUpdates()
         tableView.moveRow(at: indexPath, to: IndexPath(row: 0, section: 0))
         tableView.endUpdates()
         CATransaction.commit()
+    }
+    
+    func reload() {
+        let wasResponder = tableView.isFirstResponder
+        tableView.reloadData()
+        if wasResponder {
+            tableView.cellForRow(at: IndexPath(item: 0, section: 0))?.becomeFirstResponder()
+        }
     }
 
     required init?(coder aDecoder: NSCoder) {
@@ -79,41 +86,11 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
 //TODO: rename
 protocol BaseUpdatingView {
     func updateBase(indexPath: IndexPath)
-}
-
-
-protocol ViewModelType {
-    
-    associatedtype AssociatedView
-    
-    func associate(view: AssociatedView)
-
-    func asViewModel() -> ViewModel<AssociatedView>
-
-}
-
-extension ViewModelType {
-    func asViewModel() -> ViewModel<AssociatedView> {
-        return ViewModel(viewModel: self)
-    }
+    func reload()
 }
 
 
 
-class ViewModel<AV>: ViewModelType {
-    
-    typealias AssociatedView = AV
-    
-    private var association: (AssociatedView) -> ()
-
-    init<VM: ViewModelType>(viewModel: VM) where VM.AssociatedView == AssociatedView{
-        self.association = viewModel.associate
-    }
-
-    func associate(view: AssociatedView) {
-        return association(view)
-    }
-}
 
 
 protocol CurrenciesView: class {
@@ -122,7 +99,7 @@ protocol CurrenciesView: class {
 
 protocol RepeatingSource {
     func stopFetching()
-    func startFetching(fetchResultHandler: ())
+    func startFetching(forAmount amount: Double )
 }
 
 

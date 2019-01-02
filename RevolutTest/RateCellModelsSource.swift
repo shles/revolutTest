@@ -13,52 +13,91 @@ protocol RateCellModelsSource {
 }
 
 protocol AmountEnteringClient {
-    func update(amount: Float)
+    func update(amount: Double)
+}
+
+protocol RateUpdatingClient {
+    func update(rate: Double)
 }
 
 protocol BaseSelectionClient {
-     func baseChanged(currency: Currency)
+     func baseChanged(currencyCode: String, amountString: String)
 }
 
-class FakeRateCellsModelsSource: RateCellModelsSource, RepeatingSource, AmountEnteringClient, BaseSelectionClient {
-    lazy var rateCellModels: [RateCellViewModel] = [
-        BaseRateCellViewModel(rate: SelfRate(currency: FakeCurrency()), newAmountClient: self)] + FakeCurrency().rates.dropFirst().map {SelectableRateCellViewModel(rate: $0, newAmountClient: self) }
+class RateCellsModelsSource: RateCellModelsSource, RepeatingSource, AmountEnteringClient, BaseSelectionClient {
+    
+
+    var rateCellModels: [RateCellViewModel] = []
 
     private var view: BaseUpdatingView!
-    func startFetching(fetchResultHandler: ()) {
-        rateCellModels.forEach {
-            $0.update(amount: 1)
+    private var currencySource: CurrencySource
+    private var currency: Currency
+    private var timer = Timer()
+
+    init(currencySource: CurrencySource) {
+        //TODO: set amount
+        self.currencySource = currencySource
+        self.currency = currencySource.currency(byCode: "EUR")
+    }
+    func startFetching(forAmount amount: Double = 0) {
+        timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
+            guard let strongSelf = self else { return }
+            strongSelf.currency.fetchRates { rates in
+                if strongSelf.rateCellModels.count != rates.count + 1 {
+                    strongSelf.rateCellModels = [BaseRateCellViewModel(rate: SelfRate(currency: strongSelf.currency), newAmountClient: strongSelf)] +
+                        rates.map { SelectableRateCellViewModel(rate: $0, newAmountClient: strongSelf) }
+                    strongSelf.update(amount: amount)
+                    strongSelf.view.reload()
+                } else {
+                    for (model, rate) in zip(strongSelf.rateCellModels.dropFirst(), rates) {
+                        model.update(rate: rate.multiplier)
+                    }
+                }
+            }
         }
     }
 
     func stopFetching() {
-
+        timer.invalidate()
     }
 
-    func update(amount: Float) {
+    func update(amount: Double) {
         rateCellModels.dropFirst().forEach {
             $0.update(amount: amount)
         }
     }
 
-    //TODO: in real there should be changing request with base
-    //it should stop repeating request, change base. MB start should come again from controller
-    func baseChanged(currency: Currency) {
+    func baseChanged(currencyCode: String, amountString: String) {
 
         let index = rateCellModels.firstIndex {
-            $0.name == currency.code
+            $0.name == currencyCode
         }
-        //TODO: should somehow insert source. This should be handled not here. It should only give rates or there must be universal way to transform them into models
         if let index = index {
-            rateCellModels = [BaseRateCellViewModel(rate: SelfRate(currency: currency), newAmountClient: self)] + currency.rates.dropFirst().map {SelectableRateCellViewModel(rate: $0, newAmountClient: self) }
-            view.updateBase(indexPath: IndexPath(row: index, section: 0))
+            stopFetching()
+            currency = currencySource.currency(byCode: currencyCode)
+            self.view.updateBase(indexPath: IndexPath(row: index, section: 0))
+            rateCellModels = []
+            
+            startFetching(forAmount: Double(amountString) ?? 0)
         }
-
 
     }
 
     func associateView(view: BaseUpdatingView) {
         self.view = view
+    }
+}
+
+protocol CurrencySource {
+    func currency(byCode code: String) -> Currency
+}
+
+class FakeCurrencySource: CurrencySource {
+    func currency(byCode code: String) -> Currency {
+        if code == "USD" {
+            return FakeCurrency()
+        }
+        return FakeCurrencyFromRate(code: "EUR")
     }
 }
 

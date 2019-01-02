@@ -7,7 +7,7 @@ import Foundation
 
 protocol Rate {
     var code: String {get}
-    var multiplier: Float {get}
+    var multiplier: Double {get}
 }
 
 class SelfRate: Rate {
@@ -17,15 +17,15 @@ class SelfRate: Rate {
     }
 
     private(set) var code: String
-    private(set) var multiplier: Float = 1
+    private(set) var multiplier: Double = 1
 }
 
 class FakeEURtoUSDRate: Rate {
     private(set) var code: String = "EUR"
-    private(set) var multiplier: Float = 0.8623
+    private(set) var multiplier: Double = 0.8623
 }
 
 class FakeUSDtoEURRate: Rate {
     private(set) var code: String = "USD"
-    private(set) var multiplier: Float = 1.1596892033
+    private(set) var multiplier: Double = 1.1596892033
 }

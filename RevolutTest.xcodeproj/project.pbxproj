@@ -21,6 +21,7 @@
 		FD5A3E8721D419C300BE1922 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FD5A3E8621D419C300BE1922 /* Assets.xcassets */; };
 		FD5A3E8A21D419C300BE1922 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FD5A3E8821D419C300BE1922 /* LaunchScreen.storyboard */; };
 		FD5A3E9521D419C300BE1922 /* RevolutTestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FD5A3E9421D419C300BE1922 /* RevolutTestTests.swift */; };
+		FDFB949221DCE38D0080C01B /* ViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDFB949121DCE38D0080C01B /* ViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -54,6 +55,7 @@
 		FD5A3E9021D419C300BE1922 /* RevolutTestTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RevolutTestTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD5A3E9421D419C300BE1922 /* RevolutTestTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RevolutTestTests.swift; sourceTree = "<group>"; };
 		FD5A3E9621D419C300BE1922 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FDFB949121DCE38D0080C01B /* ViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ViewModel.swift; path = RevolutTest/ViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +97,7 @@
 		FD5A3E7021D419BF00BE1922 = {
 			isa = PBXGroup;
 			children = (
+				FDFB949121DCE38D0080C01B /* ViewModel.swift */,
 				FD5A3E7B21D419BF00BE1922 /* RevolutTest */,
 				FD5A3E9321D419C300BE1922 /* RevolutTestTests */,
 				FD5A3E7A21D419BF00BE1922 /* Products */,
@@ -283,6 +286,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FDFB949221DCE38D0080C01B /* ViewModel.swift in Sources */,
 				FD5A3E7F21D419BF00BE1922 /* ViewController.swift in Sources */,
 				FD5A3E7D21D419BF00BE1922 /* AppDelegate.swift in Sources */,
 				FD5A3E8521D419BF00BE1922 /* RevolutTest.xcdatamodeld in Sources */,
