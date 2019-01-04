@@ -4,10 +4,21 @@
 //
 
 import Foundation
+import SwiftyJSON
 
 protocol Rate {
     var code: String {get}
     var multiplier: Double {get}
+}
+
+class RateFrom: Rate {
+    var code: String
+    var multiplier: Double
+
+    init(code: String, multiplier: Double) {
+        self.code = code
+        self.multiplier = multiplier
+    }
 }
 
 class SelfRate: Rate {

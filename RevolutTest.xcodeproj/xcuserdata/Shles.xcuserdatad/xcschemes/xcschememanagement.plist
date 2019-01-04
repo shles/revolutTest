@@ -6,8 +6,35 @@
 	<dict>
 		<key>RevolutTest.xcscheme</key>
 		<dict>
+			<key>isShown</key>
+			<true />
 			<key>orderHint</key>
 			<integer>0</integer>
+		</dict>
+		<key>RevolutTestTests.xcscheme_^#shared#^_</key>
+		<dict>
+			<key>orderHint</key>
+			<integer>5</integer>
+		</dict>
+		<key>CurrencySourceTests.testCurrency.xcscheme</key>
+		<dict>
+			<key>isShown</key>
+			<false />
+			<key>orderHint</key>
+			<integer>6</integer>
+		</dict>
+	</dict>
+	<key>SuppressBuildableAutocreation</key>
+	<dict>
+		<key>FD5A3E7821D419BF00BE1922</key>
+		<dict>
+			<key>primary</key>
+			<true />
+		</dict>
+		<key>FD5A3E8F21D419C300BE1922</key>
+		<dict>
+			<key>primary</key>
+			<true />
 		</dict>
 	</dict>
 </dict>

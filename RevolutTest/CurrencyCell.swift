@@ -11,6 +11,7 @@ class RateCell: UITableViewCell, AmountClient {
 
     private var nameLabel: UILabel
     private var amountField: UITextField
+    private weak var viewModel: RateCellViewModel?
 
     override init(style: CellStyle, reuseIdentifier: String?) {
 
@@ -20,10 +21,13 @@ class RateCell: UITableViewCell, AmountClient {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
 
         let underlineView = UIView()
+        underlineView.backgroundColor = .lightGray
 
         self.addSubview(nameLabel)
         self.addSubview(amountField)
         self.addSubview(underlineView)
+        
+        nameLabel.font = UIFont.boldSystemFont(ofSize: 20)
 
         amountField.placeholder = "0"
         amountField.keyboardType = .decimalPad
@@ -38,23 +42,30 @@ class RateCell: UITableViewCell, AmountClient {
         }
         underlineView.snp.makeConstraints {
             $0.width.centerX.equalTo(amountField)
-            $0.top.equalTo(amountField.snp.bottom).inset(4)
+            $0.top.equalTo(amountField.snp.bottom).offset(8)
             $0.height.equalTo(1)
         }
 
     }
 
-    //TODO: it is still generic problem. We need to decouple it here
-    func configured(viewModel: RateCellViewModel) -> Self {
+    override func prepareForReuse() {
+        super.prepareForReuse()
+        viewModel?.associate(view: nil)
+    }
 
+    func configured(viewModel: RateCellViewModel) -> Self {
+        self.viewModel = viewModel
         self.nameLabel.text = viewModel.name
+        self.amountField.text = viewModel.amountString
         viewModel.associate(view: self)
         self.amountField.delegate = viewModel
         return self
     }
 
     func update(amount: String) {
-        self.amountField.text = amount
+        if !amountField.isFirstResponder  {
+            self.amountField.text = amount
+        }
     }
     
     override func becomeFirstResponder() -> Bool {

@@ -9,11 +9,21 @@
 import UIKit
 import SnapKit
 
+protocol BaseUpdatingView {
+    func updateBase(indexPath: IndexPath)
+    func reload()
+}
+
+protocol CurrenciesView: class {
+    func updateCurrencies(currencies: [Currency])
+}
+
 class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, BaseUpdatingView {
     
     private var tableView = UITableView()
-
     private var viewModel: RateCellModelsSource & RepeatingSource
+    
+    private var needsKeyboardDismissing = true
 
     init(viewModel: RateCellModelsSource & RepeatingSource) {
         self.viewModel = viewModel
@@ -31,20 +41,18 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         }
 
         viewModel.associateView(view: self)
+        tableView.allowsSelection = false
         tableView.reloadData()
 
     }
 
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-
         viewModel.startFetching(forAmount: 100)
-
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         super.viewWillDisappear(animated)
-
         viewModel.stopFetching()
     }
 
@@ -56,24 +64,41 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         return tableView.dequeueReusableCellOfType(RateCell.self, for: indexPath)
             .configured(viewModel: viewModel.rateCellModels[indexPath.row])
     }
+    
+    func scrollViewDidScroll(_ scrollView: UIScrollView) {
+        if needsKeyboardDismissing {
+            tableView.endEditing(true)
+        }
+    }
+    
+    func tableView(_ tableView: UITableView, didEndDisplaying cell: UITableViewCell, forRowAt indexPath: IndexPath) {
+        if indexPath.row == 0 {
+            needsKeyboardDismissing = true
+        }
+    }
 
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.cellForRow(at: indexPath)?.becomeFirstResponder()
+    }
+    
     func updateBase(indexPath: IndexPath) {
         CATransaction.begin()
-        CATransaction.setCompletionBlock {
-//            self.tableView.reloadData()
-            self.tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.becomeFirstResponder()
+        CATransaction.setCompletionBlock { [weak self] in
+            self?.tableView.cellForRow(at: IndexPath(row: 0, section: 0))?.becomeFirstResponder()
         }
         tableView.beginUpdates()
+        needsKeyboardDismissing = false
+        tableView.scrollToRow(at: IndexPath(row: 0, section: 0), at: .top, animated: false)
         tableView.moveRow(at: indexPath, to: IndexPath(row: 0, section: 0))
         tableView.endUpdates()
         CATransaction.commit()
     }
     
     func reload() {
-        let wasResponder = tableView.isFirstResponder
-        tableView.reloadData()
-        if wasResponder {
-            tableView.cellForRow(at: IndexPath(item: 0, section: 0))?.becomeFirstResponder()
+        //This meants that if the transition of row isn't complete yet, reload should hapent only after it
+        CATransaction.setCompletionBlock { [weak self] in
+            self?.tableView.reloadData()
+            self?.tableView.cellForRow(at: IndexPath(item: 0, section: 0))?.becomeFirstResponder()
         }
     }
 
@@ -81,25 +106,3 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
         fatalError()
     }
 }
-
-
-//TODO: rename
-protocol BaseUpdatingView {
-    func updateBase(indexPath: IndexPath)
-    func reload()
-}
-
-
-
-
-
-protocol CurrenciesView: class {
-    func updateCurrencies(currencies: [Currency])
-}
-
-protocol RepeatingSource {
-    func stopFetching()
-    func startFetching(forAmount amount: Double )
-}
-
-

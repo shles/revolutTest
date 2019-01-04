@@ -3,4 +3,7 @@ target 'RevolutTest' do
 
    pod 'SnapKit'
 
+   pod 'Alamofire'
+   pod 'SwiftyJSON', '~> 4.0'
+
 end

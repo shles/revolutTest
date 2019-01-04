@@ -5,7 +5,7 @@
 
 import Foundation
 
-protocol RateCellModelsSource {
+protocol RateCellModelsSource: RepeatingSource, AmountEnteringClient, BaseSelectionClient  {
 
     var rateCellModels: [RateCellViewModel] {get}
 
@@ -21,12 +21,16 @@ protocol RateUpdatingClient {
 }
 
 protocol BaseSelectionClient {
-     func baseChanged(currencyCode: String, amountString: String)
+     func baseChanged(currencyCode: String, amount: Double)
 }
 
-class RateCellsModelsSource: RateCellModelsSource, RepeatingSource, AmountEnteringClient, BaseSelectionClient {
-    
+protocol RepeatingSource {
+    func stopFetching()
+    func startFetching(forAmount amount: Double )
+}
 
+class BaseRateCellModelsSource: RateCellModelsSource{
+    
     var rateCellModels: [RateCellViewModel] = []
 
     private var view: BaseUpdatingView!
@@ -40,17 +44,24 @@ class RateCellsModelsSource: RateCellModelsSource, RepeatingSource, AmountEnteri
         self.currency = currencySource.currency(byCode: "EUR")
     }
     func startFetching(forAmount amount: Double = 0) {
+        var fresh = true
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in
             guard let strongSelf = self else { return }
             strongSelf.currency.fetchRates { rates in
-                if strongSelf.rateCellModels.count != rates.count + 1 {
-                    strongSelf.rateCellModels = [BaseRateCellViewModel(rate: SelfRate(currency: strongSelf.currency), newAmountClient: strongSelf)] +
-                        rates.map { SelectableRateCellViewModel(rate: $0, newAmountClient: strongSelf) }
-                    strongSelf.update(amount: amount)
-                    strongSelf.view.reload()
+                if fresh {
+                    fresh = false
+                    strongSelf.rateCellModels = ([SelfRate(currency: strongSelf.currency)] +
+                        rates).map { BaseRateCellViewModel(rate: $0, newAmountClient: strongSelf) }
+                    strongSelf.rateCellModels.first?.isBase = true
+                    DispatchQueue.main.async {
+                        strongSelf.update(amount: amount)
+                        strongSelf.view.reload()
+                    }
                 } else {
                     for (model, rate) in zip(strongSelf.rateCellModels.dropFirst(), rates) {
-                        model.update(rate: rate.multiplier)
+                        DispatchQueue.main.async {
+                            model.update(rate: rate.multiplier)
+                        }
                     }
                 }
             }
@@ -62,23 +73,23 @@ class RateCellsModelsSource: RateCellModelsSource, RepeatingSource, AmountEnteri
     }
 
     func update(amount: Double) {
-        rateCellModels.dropFirst().forEach {
+        rateCellModels.forEach {
             $0.update(amount: amount)
         }
     }
 
-    func baseChanged(currencyCode: String, amountString: String) {
+    func baseChanged(currencyCode: String, amount: Double) {
 
         let index = rateCellModels.firstIndex {
             $0.name == currencyCode
         }
         if let index = index {
             stopFetching()
+            rateCellModels.forEach { $0.isBase = false }
+            rateCellModels[index].isBase = true
             currency = currencySource.currency(byCode: currencyCode)
             self.view.updateBase(indexPath: IndexPath(row: index, section: 0))
-            rateCellModels = []
-            
-            startFetching(forAmount: Double(amountString) ?? 0)
+            startFetching(forAmount: amount)
         }
 
     }
@@ -87,17 +98,3 @@ class RateCellsModelsSource: RateCellModelsSource, RepeatingSource, AmountEnteri
         self.view = view
     }
 }
-
-protocol CurrencySource {
-    func currency(byCode code: String) -> Currency
-}
-
-class FakeCurrencySource: CurrencySource {
-    func currency(byCode code: String) -> Currency {
-        if code == "USD" {
-            return FakeCurrency()
-        }
-        return FakeCurrencyFromRate(code: "EUR")
-    }
-}
-
