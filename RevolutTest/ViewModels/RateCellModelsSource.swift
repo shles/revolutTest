@@ -39,10 +39,10 @@ class BaseRateCellModelsSource: RateCellModelsSource{
     private var timer = Timer()
 
     init(currencySource: CurrencySource) {
-        //TODO: set amount
         self.currencySource = currencySource
         self.currency = currencySource.currency(byCode: "EUR")
     }
+    
     func startFetching(forAmount amount: Double = 0) {
         var fresh = true
         timer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] timer in

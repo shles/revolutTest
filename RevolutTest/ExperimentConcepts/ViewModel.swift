@@ -8,7 +8,18 @@
 
 import Foundation
 
-//TODO: write readme about these concepts
+/*
+ README:
+ 
+ Here I've tried to create a generic view model concept.
+ I've created a protocol and a type erasure.
+ But there are stil problems with constructors.
+ We can't use generic protocol, because it doesn't know the exact type of the assosiated view.
+ We also can't use the erased type, because it loses all the other protocol.
+ This is the point where I've came so far, and then decided to drop the generics.
+ 
+ I'm sure there is a way to improve this and finally achieve generic view models, however it requires some time for experiments
+*/
 
 protocol ViewModelType {
     
@@ -25,8 +36,6 @@ extension ViewModelType {
         return ViewModel(viewModel: self)
     }
 }
-
-
 
 class ViewModel<AV>: ViewModelType {
     

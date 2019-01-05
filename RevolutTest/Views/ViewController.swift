@@ -23,6 +23,7 @@ class ViewController: UIViewController, UITableViewDataSource, UITableViewDelega
     private var tableView = UITableView()
     private var viewModel: RateCellModelsSource & RepeatingSource
     
+    //this flag is required for preventing the keyboard from hiding, when the table scrools up while changing the base currency
     private var needsKeyboardDismissing = true
 
     init(viewModel: RateCellModelsSource & RepeatingSource) {
